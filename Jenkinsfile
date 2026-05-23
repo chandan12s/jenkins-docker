@@ -15,7 +15,7 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
-                    dockerImage = docker.build("${env.IMAGE_NAME}")
+                    dockerImage = docker.build("${env.IMAGE_NAME}:${env.BUILD_NUMBER}")
                     echo "Docker image built: ${dockerImage.id} with tag: ${env.BUILD_NUMBER}"
                 }
             }
@@ -24,8 +24,8 @@ pipeline {
         stage('Tag Image') {
             steps {
                 script {
-                    echo "Tagging image ${dockerImage.id} with tag: ${env.BUILD_NUMBER}"
-                    dockerImage.tag('${env.BUILD_NUMBER}')
+                    echo "Tagging image ${dockerImage.id} with latest tag"
+                    dockerImage.tag('latest')
                 }
             }
         }
@@ -35,8 +35,8 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: '${env.DOCKERHUB_CREDENTIALS}', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     script {
                         docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-creds') {
-                            dockerImage.push('${env.BUILD_NUMBER}')
-                            echo "Docker image pushed: ${env.IMAGE_NAME}:${env.BUILD_NUMBER}"
+                            dockerImage.push('latest')
+                            echo "Docker image pushed: ${env.IMAGE_NAME}:latest"
                         }
                     }
                 }
